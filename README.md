@@ -135,6 +135,6 @@ npm run dev
 
 # 👨‍💻 Author
 
-Aditya Pradhan
+Himanshu
 
 Full Stack Developer | AI Enthusiast | Problem Solver
