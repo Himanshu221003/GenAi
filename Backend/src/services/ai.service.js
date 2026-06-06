@@ -1,7 +1,16 @@
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
-const puppeteer = require("puppeteer")
+
+let puppeteer;
+let chromium;
+
+if (process.env.NODE_ENV === "production") {
+    puppeteer = require("puppeteer-core");
+    chromium = require("@sparticuz/chromium-min");
+} else {
+    puppeteer = require("puppeteer");
+}
 
 const ai = process.env.GEMINI_API_KEY ? new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -65,9 +74,19 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 
 
 async function generatePdfFromHtml(htmlContent) {
-    const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    })
+    let browser;
+    if (process.env.NODE_ENV === "production") {
+        browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
+    } else {
+        browser = await puppeteer.launch({
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+    }
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" })
 
